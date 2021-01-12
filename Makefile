@@ -28,9 +28,14 @@ video.o
 
 EXENAME = yapesdl
 SRCPACKAGENAME = $(EXENAME)_0.70.2-1
-BINPACKAGENAME = $(SRCPACKAGENAME)_amd64
-SDL_CFLAGS := $(shell sdl2-config --cflags)
-SDL_LDFLAGS := $(shell sdl2-config --libs)
+#BINPACKAGENAME = $(SRCPACKAGENAME)_amd64
+ifdef USE_SDL2
+SDL_CFLAGS := $(shell sdl2-config --cflags) -D USE_SDL2=2
+SDL_LIBS := $(shell sdl2-config --libs)
+else
+SDL_CFLAGS := $(shell sdl-config --cflags)
+SDL_LIBS := $(shell sdl-config --libs)
+endif
 
 headers = $(objects:.o=.h)
 sources = $(objects:.o=.cpp)
@@ -39,97 +44,97 @@ hasnoheader = main.h dos.h dis.h tedsound.h
 sourcefiles = $(filter-out $(hasnoheader),$(allfiles)) icon.h device.h mem.h mnemonic.h \
 				roms.h types.h Clockable.h 1541rom.h YapeSDL.cbp YapeSDL.Linux.cbp
 
-CC = g++
-cflags = -O3 -w $(SDL_CFLAGS)
-libs = $(SDL_LDFLAGS)
+CXX = g++
+CXXFLAGS += -Os -Wall $(SDL_CFLAGS)
+libs = $(SDL_LIBS)
 
-yape : $(objects)
-	$(CC) $(cflags) -o $(EXENAME) -s $(objects) $(libs)
+$(EXENAME): $(objects)
+	$(CXX) $(LDFLAGS) $(objects) -o $@ $(libs)
 
-yapedebug : $(objects)
-	$(CC) $(cflags) $(libs) -g -Og -o $(EXENAME)d $^
+#yapedebug : $(objects)
+#	$(CXX) $(CXXFLAGS) $(libs) -g -Og -o $(EXENAME)d $^
 
 1541mem.o : 1541mem.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 archdep.o : archdep.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 Cia.o : Cia.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 cpu.o : cpu.cpp tedmem.h
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 diskfs.o : diskfs.cpp diskfs.h device.h iec.h
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 dis.o : dis.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 dos.o : dos.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 drive.o : drive.cpp iec.cpp drive.h device.h diskfs.h iec.h tcbm.h
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 FdcGcr.o : FdcGcr.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 iec.o : iec.cpp iec.h
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 interface.o : interface.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 keyboard.o : keyboard.cpp keyboard.h
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 keys64.o : keys64.cpp keys64.h
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 main.o : main.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 monitor.o : monitor.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 prg.o : prg.cpp prg.h
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 SaveState.o : SaveState.cpp SaveState.h
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 serial.o : serial.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 sound.o : sound.cpp sound.h
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 Sid.o : Sid.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 tape.o : tape.cpp tape.h
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 tcbm.o : tcbm.cpp tcbm.h
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 tedmem.o : tedmem.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 tedsound.o : tedsound.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 vic2mem.o : vic2mem.cpp vic2mem.h
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 video.o : video.cpp
-	$(CC) $(cflags) -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 clean :
-	rm -f ./*.o
-	rm ./$(EXENAME)
+	rm -f *.o
+	rm -f $(EXENAME)
 
 tgz :
 	tar -czf $(SRCPACKAGENAME).tar.gz $(sourcefiles) Makefile COPYING README.SDL Changes
@@ -139,13 +144,13 @@ e :
 	emacs -fn 10x20 Makefile *.h *.cpp &
 
 deb:
-	cp ./$(EXENAME) ./$(SRCPACKAGENAME)/usr/local/bin
+	cp $(EXENAME) $(SRCPACKAGENAME)/usr/local/bin
 	dpkg-deb --build $(SRCPACKAGENAME)
 	mv $(SRCPACKAGENAME).deb $(BINPACKAGENAME).deb
 
 install :
 #	@if [ ! -e $(HOME)/yape ]; then mkdir $(HOME)/.yape ; fi
 #	@cp yape.conf $(HOME)/.yape $^
-	@cp ./$(EXENAME) $(BINDIR)
+	@cp $(EXENAME) $(BINDIR)
 
 

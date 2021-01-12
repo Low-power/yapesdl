@@ -3,10 +3,10 @@
 
 #if defined(__EMSCRIPTEN__)
 #include <SDL2/SDL.h>
-#elif defined(_MSC_VER)
-#include <SDL/SDL.h>
-#else
+#elif defined USE_SDL2
 #include <SDL2/SDL.h>
+#else
+#include <SDL/SDL.h>
 #endif
 
 #ifdef __GNUC__ /*__GNUC__*/
