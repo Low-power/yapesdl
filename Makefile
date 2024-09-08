@@ -30,11 +30,10 @@ EXENAME = yapesdl
 SRCPACKAGENAME = $(EXENAME)_0.70.2-1
 #BINPACKAGENAME = $(SRCPACKAGENAME)_amd64
 ifdef USE_SDL2
-SDL_CFLAGS := $(shell sdl2-config --cflags) -D USE_SDL2=2
-SDL_LIBS := $(shell sdl2-config --libs)
+SDL_CFLAGS += -D USE_SDL2=2
+SDL_LIBS := -l SDL2
 else
-SDL_CFLAGS := $(shell sdl-config --cflags)
-SDL_LIBS := $(shell sdl-config --libs)
+SDL_LIBS := -l SDL
 endif
 
 headers = $(objects:.o=.h)
